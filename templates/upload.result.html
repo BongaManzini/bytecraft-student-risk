@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prediction Results - Student Dropout System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/dashboard"><i class="fas fa-graduation-cap"></i> Dropout Risk Manager</a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text me-3">
+                    <i class="fas fa-user"></i> {{ username }} ({{ role }})
+                </span>
+                <a class="nav-link" href="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h4 class="mb-0"><i class="fas fa-check-circle"></i> Batch Prediction Complete</h4>
+                    </div>
+                    <div class="card-body">
+                        <!-- Summary Statistics -->
+                        <div class="row mb-4">
+                            <div class="col-md-3">
+                                <div class="card bg-primary text-white text-center">
+                                    <div class="card-body">
+                                        <h3>{{ total_students }}</h3>
+                                        <p>Total Students</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-danger text-white text-center">
+                                    <div class="card-body">
+                                        <h3>{{ high_risk_count }}</h3>
+                                        <p>High Risk</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-warning text-white text-center">
+                                    <div class="card-body">
+                                        <h3>{{ "%.1f"|format(high_risk_percentage) }}%</h3>
+                                        <p>Risk Percentage</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-info text-white text-center">
+                                    <div class="card-body">
+                                        <h3>{{ "%.1f"|format(avg_confidence) }}%</h3>
+                                        <p>Avg Confidence</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-start mb-4">
+                            <a href="/download-predictions/{{ output_filename }}" class="btn btn-primary me-2">
+                                <i class="fas fa-download"></i> Download Full Results
+                            </a>
+                            <a href="/upload-csv" class="btn btn-outline-primary">
+                                <i class="fas fa-redo"></i> Process Another File
+                            </a>
+                        </div>
+                        
+                        <!-- Preview Table -->
+                        <h5><i class="fas fa-table"></i> Preview (First 10 Records)</h5>
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Student</th>
+                                        <th>Age</th>
+                                        <th>Admission Grade</th>
+                                        <th>Semester Grade</th>
+                                        <th>Risk Level</th>
+                                        <th>Confidence</th>
+                                        <th>Probability</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for student in preview_data %}
+                                    <tr>
+                                        <td>
+                                            {% if student.get('name') %}
+                                                {{ student.name }}
+                                            {% else %}
+                                                Student {{ loop.index }}
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ student.get('Age at enrollment', 'N/A') }}</td>
+                                        <td>{{ student.get('Admission grade', 'N/A') }}</td>
+                                        <td>
+                                            {% set sem1 = student.get('Curricular units 1st sem (grade)', 0) %}
+                                            {% set sem2 = student.get('Curricular units 2nd sem (grade)', 0) %}
+                                            {{ "%.1f"|format((sem1 + sem2) / 2) }}
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{% if student.predicted_dropout_risk == 'High Risk' %}danger{% else %}success{% endif %}">
+                                                {{ student.predicted_dropout_risk }}
+                                            </span>
+                                        </td>
+                                        <td>{{ "%.1f"|format(student.prediction_confidence) }}%</td>
+                                        <td>{{ "%.1f"|format(student.prediction_probability) }}%</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Recommendations -->
+                        <div class="alert alert-warning mt-4">
+                            <h6><i class="fas fa-lightbulb"></i> Recommended Actions:</h6>
+                            <ul class="mb-0">
+                                <li>Review high-risk students individually</li>
+                                <li>Schedule interventions for students with confidence > 80%</li>
+                                <li>Monitor medium-risk students regularly</li>
+                                <li>Download full results for detailed analysis</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-3 text-center">
+                    <a href="/dashboard" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

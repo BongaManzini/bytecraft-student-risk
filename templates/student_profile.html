@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ student.name }} - Student Profile</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/dashboard"><i class="fas fa-graduation-cap"></i> Dropout Risk Manager</a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text me-3">
+                    <i class="fas fa-user"></i> {{ username }} ({{ role }})
+                </span>
+                <a class="nav-link" href="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-user-graduate"></i> Student Profile</h2>
+            <a href="/students" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back to Students</a>
+        </div>
+
+        <div class="row">
+            <!-- Student Information -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-info-circle"></i> Student Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Student ID:</strong> <code>{{ student.student_id }}</code></p>
+                        <p><strong>Name:</strong> {{ student.name }}</p>
+                        <p><strong>Faculty:</strong> {{ student.faculty }}</p>
+                        <p><strong>Course Code:</strong> {{ student.Course }}</p>
+                        <p><strong>Age at Enrollment:</strong> {{ student['Age at enrollment'] }}</p>
+                        <p><strong>Gender:</strong> {% if student.Gender == 1 %}Male{% else %}Female{% endif %}</p>
+                        <p><strong>Status:</strong> 
+                            <span class="badge bg-{{ status_badge_class }}">
+                                {{ student.Target }}
+                            </span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Risk Assessment -->
+                <div class="card mt-3">
+                    <div class="card-header bg-{{ risk_header_class }} text-white">
+                        <h5 class="mb-0"><i class="fas fa-chart-line"></i> Risk Assessment</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center">
+                            <h1 class="display-4 text-{{ risk_text_class }}">
+                                {{ student.dropout_risk }}
+                            </h1>
+                            <p class="text-muted">Dropout Risk Level</p>
+                        </div>
+                        <div class="mt-3">
+                            <h6><i class="fas fa-exclamation-triangle"></i> Risk Factors:</h6>
+                            <ul class="list-unstyled">
+                                {% for factor in risk_factors %}
+                                <li><i class="fas fa-exclamation-circle text-danger me-2"></i> {{ factor }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Information -->
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-cogs"></i> Additional Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-12">
+                                <p><strong>Scholarship Holder:</strong> 
+                                    <span class="badge bg-{% if student['Scholarship holder'] %}success{% else %}secondary{% endif %}">
+                                        {% if student['Scholarship holder'] %}Yes{% else %}No{% endif %}
+                                    </span>
+                                </p>
+                                <p><strong>Debtor Status:</strong> 
+                                    <span class="badge bg-{% if student.Debtor %}danger{% else %}success{% endif %}">
+                                        {% if student.Debtor %}Yes{% else %}No{% endif %}
+                                    </span>
+                                </p>
+                                <p><strong>Tuition Status:</strong> 
+                                    <span class="badge bg-{% if student['Tuition fees up to date'] %}success{% else %}danger{% endif %}">
+                                        {% if student['Tuition fees up to date'] %}Up to Date{% else %}Not Up to Date{% endif %}
+                                    </span>
+                                </p>
+                                <p><strong>International Student:</strong> 
+                                    <span class="badge bg-{% if student.International %}info{% else %}secondary{% endif %}">
+                                        {% if student.International %}Yes{% else %}No{% endif %}
+                                    </span>
+                                </p>
+                                <p><strong>Displaced Student:</strong> 
+                                    <span class="badge bg-{% if student.Displaced %}warning{% else %}secondary{% endif %}">
+                                        {% if student.Displaced %}Yes{% else %}No{% endif %}
+                                    </span>
+                                </p>
+                                <p><strong>Special Needs:</strong> 
+                                    <span class="badge bg-{% if student['Educational special needs'] %}warning{% else %}secondary{% endif %}">
+                                        {% if student['Educational special needs'] %}Yes{% else %}No{% endif %}
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Academic Performance -->
+            <div class="col-md-8">
+                <!-- Academic Summary -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Academic Performance Summary</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            {% for metric, value in academic_data.items() %}
+                            <div class="col-md-4 mb-3">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h6 class="card-title text-muted">{{ metric }}</h6>
+                                        <h3 class="text-{% if 'Grade' in metric and value|float > 12 %}success{% elif 'Grade' in metric and value|float > 8 %}warning{% elif 'Grade' in metric %}danger{% else %}primary{% endif %}">
+                                            {{ value }}
+                                        </h3>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Curriculum Charts -->
+                <div class="card mt-3">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="fas fa-chart-line"></i> Curriculum Performance Analysis</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if curriculum_chart %}
+                        <div class="text-center mb-4">
+                            <h6>Semester Performance Comparison</h6>
+                            <img src="{{ curriculum_chart }}" alt="Curriculum Performance Chart" class="img-fluid" style="max-width: 100%;">
+                        </div>
+                        {% endif %}
+
+                        {% if radar_chart %}
+                        <div class="text-center">
+                            <h6>Performance Radar Analysis</h6>
+                            <img src="{{ radar_chart }}" alt="Performance Radar Chart" class="img-fluid" style="max-width: 100%;">
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Curriculum Details -->
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-book"></i> Curriculum Details</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            {% for semester, details in curriculum_details.items() %}
+                            <div class="col-md-6">
+                                <div class="card mb-3">
+                                    <div class="card-header bg-secondary text-white">
+                                        <h6 class="mb-0">{{ semester }}</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p><strong>Units Enrolled:</strong> {{ details.Enrolled }}</p>
+                                        <p><strong>Units Approved:</strong> {{ details.Approved }}</p>
+                                        <p><strong>Evaluations Completed:</strong> {{ details.Evaluations }}</p>
+                                        <p><strong>Average Grade:</strong> 
+                                            <span class="badge bg-{% if details.Grade >= 14 %}success{% elif details.Grade >= 10 %}warning{% else %}danger{% endif %}">
+                                                {{ details.Grade }}
+                                            </span>
+                                        </p>
+                                        <p><strong>Units Without Evaluation:</strong> {{ details['Without Evaluations'] }}</p>
+                                        <div class="progress mt-2">
+                                            <div class="progress-bar bg-success" 
+                                                 style="width: {{ (details.Approved / details.Enrolled * 100) if details.Enrolled > 0 else 0 }}%">
+                                                {{ "%.1f"|format((details.Approved / details.Enrolled * 100) if details.Enrolled > 0 else 0) }}%
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">Completion Rate</small>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recommended Interventions -->
+                <div class="card mt-3">
+                    <div class="card-header bg-warning text-white">
+                        <h5 class="mb-0"><i class="fas fa-lightbulb"></i> Recommended Interventions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group">
+                            {% for intervention in interventions %}
+                            <div class="list-group-item">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                {{ intervention }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-bolt"></i> Quick Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2 d-md-flex">
+                            <a href="/predict" class="btn btn-primary me-2">
+                                <i class="fas fa-robot"></i> New Risk Prediction
+                            </a>
+                            <button class="btn btn-outline-info me-2" onclick="window.print()">
+                                <i class="fas fa-print"></i> Print Profile
+                            </button>
+                            <a href="/students" class="btn btn-outline-secondary">
+                                <i class="fas fa-list"></i> View All Students
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

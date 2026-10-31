@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Model Information - Student Dropout System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/dashboard"><i class="fas fa-graduation-cap"></i> Dropout Risk Manager</a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text me-3">
+                    <i class="fas fa-user"></i> {{ username }} ({{ role }})
+                </span>
+                <a class="nav-link" href="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h4 class="mb-0"><i class="fas fa-brain"></i> AI Model Information</h4>
+                    </div>
+                    <div class="card-body">
+                        <!-- Model Performance -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="card bg-success text-white text-center">
+                                    <div class="card-body">
+                                        <h3>{{ "%.1f"|format(train_accuracy * 100) }}%</h3>
+                                        <p>Training Accuracy</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card bg-primary text-white text-center">
+                                    <div class="card-body">
+                                        <h3>{{ "%.1f"|format(test_accuracy * 100) }}%</h3>
+                                        <p>Test Accuracy</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Feature Importance -->
+                        <h5><i class="fas fa-chart-bar"></i> Feature Importance</h5>
+                        <p class="text-muted">The most influential factors in predicting dropout risk:</p>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Feature</th>
+                                        <th>Importance Score</th>
+                                        <th>Impact</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for feature, importance in feature_importance %}
+                                    <tr>
+                                        <td>{{ feature }}</td>
+                                        <td>{{ "%.3f"|format(importance) }}</td>
+                                        <td>
+                                            <div class="progress" style="height: 10px;">
+                                                <div class="progress-bar bg-info" 
+                                                     style="width: {{ importance * 100 }}%">
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Model Details -->
+                        <div class="alert alert-info mt-4">
+                            <h6><i class="fas fa-info-circle"></i> Model Details:</h6>
+                            <ul class="mb-0">
+                                <li><strong>Algorithm:</strong> Random Forest Classifier</li>
+                                <li><strong>Training Data:</strong> 1,000+ student records</li>
+                                <li><strong>Features:</strong> 12 key academic and demographic factors</li>
+                                <li><strong>Purpose:</strong> Predict student dropout risk with high accuracy</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-3 text-center">
+                    <a href="/dashboard" class="btn btn-secondary me-2">
+                        <i class="fas fa-arrow-left"></i> Back to Dashboard
+                    </a>
+                    <a href="/predict" class="btn btn-primary me-2">
+                        <i class="fas fa-user"></i> Single Prediction
+                    </a>
+                    <a href="/upload-csv" class="btn btn-outline-primary">
+                        <i class="fas fa-file-csv"></i> Batch Prediction
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
